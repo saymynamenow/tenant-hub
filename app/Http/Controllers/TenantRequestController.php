@@ -46,7 +46,7 @@ class TenantRequestController extends Controller
 
             return response()->json([
                 'message' => 'Your tenant request has been submitted successfully. We will review it and get back to you soon.',
-                'request' => $tenantRequest
+                'data' => $tenantRequest
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -84,6 +84,11 @@ class TenantRequestController extends Controller
      */
     public function approve(Request $request, $id)
     {
+        // Check if user is admin
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'username' => 'required|string|max:255',
             'password' => 'required|string|min:6',
@@ -136,6 +141,11 @@ class TenantRequestController extends Controller
      */
     public function updateStatus(Request $request, $id)
     {
+        // Check if user is admin
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'status' => 'required|in:approved,rejected',
             'admin_notes' => 'nullable|string|max:1000',
@@ -171,6 +181,11 @@ class TenantRequestController extends Controller
      */
     public function destroy($id)
     {
+        // Check if user is admin
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         try {
             $tenantRequest = TenantRequest::findOrFail($id);
             $tenantRequest->delete();

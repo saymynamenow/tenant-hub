@@ -89,88 +89,6 @@
                 <!-- Main Content -->
                 <div class="lg:col-span-3">
                     <!-- Account Info Tab -->
-                    <div
-                        v-if="activeTab === 'account'"
-                        class="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-                    >
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6">
-                            Account Information
-                        </h2>
-
-                        <form @submit.prevent="updateProfile" class="space-y-6">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-2"
-                                        >Full Name</label
-                                    >
-                                    <input
-                                        v-model="profileForm.name"
-                                        type="text"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-2"
-                                        >Email Address</label
-                                    >
-                                    <input
-                                        v-model="profileForm.email"
-                                        type="email"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-2"
-                                        >Phone Number</label
-                                    >
-                                    <input
-                                        v-model="profileForm.phone"
-                                        type="tel"
-                                        placeholder="+1 (555) 000-0000"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                                    />
-                                </div>
-                                <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-2"
-                                        >Date of Birth</label
-                                    >
-                                    <input
-                                        v-model="profileForm.birthdate"
-                                        type="date"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                                    />
-                                </div>
-                            </div>
-
-                            <div class="flex gap-4">
-                                <button
-                                    type="submit"
-                                    :disabled="updating"
-                                    class="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold rounded-lg transition"
-                                >
-                                    {{
-                                        updating ? "Saving..." : "Save Changes"
-                                    }}
-                                </button>
-                                <button
-                                    type="button"
-                                    @click="resetProfileForm"
-                                    class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
 
                     <!-- Orders Tab -->
                     <div
@@ -577,7 +495,7 @@ const router = useRouter();
 const { user, fetchUser } = useAuth();
 const { getOrders } = useOrderService();
 
-const activeTab = ref("account");
+const activeTab = ref("orders");
 const orders = ref([]);
 const loadingOrders = ref(false);
 const updating = ref(false);
@@ -660,12 +578,7 @@ const SettingsIcon = () =>
         })
     );
 
-const tabs = [
-    { id: "account", label: "Account Info", icon: UserIcon },
-    { id: "orders", label: "Order History", icon: OrderIcon },
-    { id: "security", label: "Security", icon: SecurityIcon },
-    { id: "settings", label: "Settings", icon: SettingsIcon },
-];
+const tabs = [{ id: "orders", label: "Order History", icon: OrderIcon }];
 
 const profileForm = ref({
     name: "",

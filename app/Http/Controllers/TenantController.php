@@ -50,6 +50,73 @@ class TenantController extends Controller
         }
     }
 
+    public function stats()
+    {
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $total = Tenant::count();
+            $active = Tenant::where('status', 'active')->count();
+            $inactive = Tenant::where('status', 'inactive')->count();
+            $suspended = Tenant::where('status', 'suspended')->count();
+
+            return response()->json([
+                'total' => $total,
+                'active' => $active,
+                'inactive' => $inactive,
+                'suspended' => $suspended,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to get statistics', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'name' => 'required|string|unique:tenants,name',
+            'status' => 'sometimes|in:active,inactive,suspended',
+        ]);
+
+        try {
+            $tenant = $this->tenantService->createTenant([
+                'name' => $request->input('name'),
+                'username' => Str::slug($request->input('name')) . '_user',
+                'password' => Str::random(16),
+                'status' => $request->input('status', 'active'),
+            ]);
+
+            return response()->json([
+                'message' => 'Tenant created successfully',
+                'tenant' => $tenant
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create tenant', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function destroy($tenantId)
+    {
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $tenant = Tenant::findOrFail($tenantId);
+            $tenant->delete();
+
+            return response()->json(['message' => 'Tenant deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete tenant', 'message' => $e->getMessage()], 500);
+        }
+    }
+
 
     public function status(Request $request)
     {
@@ -64,10 +131,8 @@ class TenantController extends Controller
             abort(403, 'Tenant registration is only allowed from the central domain.');
         }
 
-        $user = Auth::user();
-
-        if (!$user || $user->role !== 'admin') {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $request->validate([
@@ -100,10 +165,8 @@ class TenantController extends Controller
 
     public function UpdateTenantStatus(Request $request, $tenantId)
     {
-        $user = Auth::user();
-
-        if (!$user || $user->role !== 'admin') {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        if (!auth()->check() || auth()->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $request->validate([

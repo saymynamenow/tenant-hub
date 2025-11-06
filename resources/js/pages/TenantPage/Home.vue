@@ -60,25 +60,98 @@
                                 class="w-48 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
-                        <RouterLink
-                            to="/profile"
-                            class="text-gray-600 hover:text-gray-900 transition"
-                            title="My Profile"
-                        >
-                            <svg
-                                class="w-6 h-6"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+
+                        <!-- Profile Dropdown -->
+                        <div class="relative">
+                            <button
+                                @click="toggleProfileDropdown"
+                                class="text-gray-600 hover:text-gray-900 transition flex items-center gap-1"
+                                title="Profile Menu"
                             >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                />
-                            </svg>
-                        </RouterLink>
+                                <svg
+                                    class="w-6 h-6"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                    />
+                                </svg>
+                                <svg
+                                    class="w-4 h-4 transition-transform"
+                                    :class="{
+                                        'rotate-180': profileDropdownOpen,
+                                    }"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="2"
+                                        d="M19 9l-7 7-7-7"
+                                    />
+                                </svg>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div
+                                v-if="profileDropdownOpen"
+                                class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200"
+                            >
+                                <RouterLink
+                                    to="/profile"
+                                    class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+                                    @click="closeProfileDropdown"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <svg
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                            />
+                                        </svg>
+                                        <span>My Profile</span>
+                                    </div>
+                                </RouterLink>
+
+                                <RouterLink
+                                    v-if="isUserAdmin"
+                                    to="/dashboard"
+                                    class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition"
+                                    @click="closeProfileDropdown"
+                                >
+                                    <div class="flex items-center gap-2">
+                                        <svg
+                                            class="w-5 h-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                            />
+                                        </svg>
+                                        <span>Management Dashboard</span>
+                                    </div>
+                                </RouterLink>
+                            </div>
+                        </div>
                         <div class="relative">
                             <RouterLink
                                 to="/cart"
@@ -292,7 +365,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, onUnmounted } from "vue";
 import { useRouter, RouterLink } from "vue-router";
 import { useProductService } from "../../composables/useProductService";
 import ProductCard from "../../components/ProductCard.vue";
@@ -319,7 +392,7 @@ export default {
         const { fetchProducts } = useProductService();
         const { fetchCategories } = useCategoryService();
         const { addToCart, fetchCart } = useCartService();
-        const { logout } = useAuth();
+        const { logout, user, isManager, isOwner } = useAuth();
 
         const products = ref([]);
         const loadingProducts = ref(false);
@@ -328,11 +401,16 @@ export default {
         const toastMessage = ref("");
         const cartItems = ref([]);
         const logoutModalRef = ref(null);
+        const profileDropdownOpen = ref(false);
 
         const featuredCategories = ref([]);
 
         const cartCount = computed(() => {
             return cartItems.value.length;
+        });
+
+        const isUserAdmin = computed(() => {
+            return isManager.value || isOwner.value;
         });
 
         const testimonials = [
@@ -427,10 +505,31 @@ export default {
             }
         };
 
+        const toggleProfileDropdown = () => {
+            profileDropdownOpen.value = !profileDropdownOpen.value;
+        };
+
+        const closeProfileDropdown = () => {
+            profileDropdownOpen.value = false;
+        };
+
+        // Close dropdown when clicking outside
+        const handleClickOutside = (event) => {
+            const dropdown = event.target.closest(".relative");
+            if (!dropdown && profileDropdownOpen.value) {
+                closeProfileDropdown();
+            }
+        };
+
         onMounted(() => {
             loadProducts();
             loadCategory();
             loadCart();
+            document.addEventListener("click", handleClickOutside);
+        });
+
+        onUnmounted(() => {
+            document.removeEventListener("click", handleClickOutside);
         });
 
         return {
@@ -443,11 +542,14 @@ export default {
             featuredCategories,
             testimonials,
             cartCount,
+            isUserAdmin,
+            profileDropdownOpen,
             handleLogout,
             confirmLogout,
-            handleLogout,
             handleAddToCart,
             scrollToSection,
+            toggleProfileDropdown,
+            closeProfileDropdown,
         };
     },
 };
@@ -467,5 +569,9 @@ export default {
 .slide-leave-to {
     transform: translateX(400px);
     opacity: 0;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
 }
 </style>

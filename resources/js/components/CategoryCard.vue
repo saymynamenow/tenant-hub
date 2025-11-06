@@ -5,6 +5,7 @@
         <div
             :class="`h-32 flex items-center justify-center text-5xl`"
             :style="{ backgroundColor: category.color }"
+            @click="goToCategory(category)"
         >
             {{ category.icon }}
         </div>
@@ -18,6 +19,8 @@
 </template>
 
 <script>
+import { useRouter } from "vue-router";
+
 export default {
     name: "CategoryCard",
     props: {
@@ -25,6 +28,20 @@ export default {
             type: Object,
             required: true,
         },
+    },
+    setup() {
+        const router = useRouter();
+
+        const goToCategory = (category) => {
+            router.push({
+                path: "/products",
+                query: { category: category.id },
+            });
+        };
+
+        return {
+            goToCategory,
+        };
     },
 };
 </script>

@@ -14,10 +14,10 @@ Route::post('/tenants/register', [TenantController::class, 'register']);
 Route::post('/tenant-requests', [TenantRequestController::class, 'store']);
 Route::post('/central/login', [UserCentral::class, 'loginCentralUser']);
 Route::post('/central/logout', [UserCentral::class, 'logoutCentralUser']);
-Route::get('/central/me', [UserCentral::class, 'meCentralUser']);
 Route::post('/central/register', [UserCentral::class, 'registerCentralUser']);
 
 Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/central/me', [UserCentral::class, 'meCentralUser']);
     Route::get('/getTenant', [TenantController::class, 'index']);
     Route::get('/tenants/stats', [TenantController::class, 'stats']);
     Route::post('/tenants', [TenantController::class, 'store']);
