@@ -1,4 +1,3 @@
-````markdown
 # Multi-Tenant E-Commerce Platform
 
 A modern multi-tenant e-commerce platform built with Laravel 12 and Vue 3. This application supports multiple isolated tenant databases with a central administration dashboard for managing tenants and customer requests.
@@ -1744,4 +1743,3 @@ Future enhancements planned:
 ---
 
 **Built with ❤️ using Laravel and Vue.js**
-````
